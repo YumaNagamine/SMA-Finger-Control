@@ -1,0 +1,36 @@
+{
+  "video": {
+    "input_path": "sc01/sc01.mp4",
+    "frame_jump": 0,
+    "frame_shift": 0,
+    "output_fps": 30,
+    "denoising_mode": "monocolor",
+    "show_window": true
+  },
+  "markers": {
+    "lab_ranges": [
+      { "l": [100, 220], "a": [160, 220], "b": [60, 160] },
+      { "l": [100, 215], "a": [70, 190], "b": [30, 80] },
+      { "l": [180, 210], "a": [55, 85], "b": [120, 180] },
+      { "l": [150, 235], "a": [80, 90], "b": [100, 120] }
+    ],
+    "area_thresholds": [10, 10, 10, 10],
+    "line_padding": 5,
+    "draw_colors": [
+      [255, 0, 0],
+      [127, 0, 255],
+      [0, 127, 0],
+      [0, 127, 255]
+    ],
+    "adjustments": {
+      "theta": 0.55,
+      "distance": -30,
+      "joint_shifters": [15, 110],
+      "mcp_offset": [-130, 0]
+    }
+  },
+  "output": {
+    "csv_dir": "src/data/side_angle/angle",
+    "video_dir": "src/data/side_angle/extracted_video"
+  }
+}
