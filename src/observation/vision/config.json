@@ -1,6 +1,6 @@
 {
   "video": {
-    "input_path": "sc01/sc01.mp4",
+    "input_path": "log/data/side_angle/videoname.mp4",
     "frame_jump": 0,
     "frame_shift": 0,
     "output_fps": 30,
@@ -30,7 +30,7 @@
     }
   },
   "output": {
-    "csv_dir": "src/data/side_angle/angle",
-    "video_dir": "src/data/side_angle/extracted_video"
+    "csv_dir": "log/side_angle/angle",
+    "video_dir": "log/side_angle/extracted_video"
   }
 }

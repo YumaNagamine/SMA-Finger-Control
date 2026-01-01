@@ -12,9 +12,8 @@ from matplotlib import pyplot as plt
 from matplotlib.pyplot import MultipleLocator
 
 RUNTIME = time.time()
-IMG_FOLDER = "./img/"
-FIG_FOLDER = "./LOG/"
-DATA_FOLDER = "./LOG/"
+FIG_FOLDER = "./log/"
+DATA_FOLDER = "./log/"
 FIG_SIZE = (38.4, 21.6)  # (21.6,14.4)#(19.2,10.8)
 FONTSIZE = 40
 
