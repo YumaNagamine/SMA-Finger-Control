@@ -213,3 +213,4 @@ __marimo__/
 *.txt
 *.jpg
 .DS_store
+log

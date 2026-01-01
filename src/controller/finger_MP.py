@@ -1,22 +1,18 @@
 #!/usr/bin/env python3
 """Multiprocess controller for SMA finger."""
 
-from __future__ import annotations
-
 import multiprocessing as mp
 import os
 import sys
 import time
 
-from pyftdimod import i2c
-
-from pca9685.PCA9685 import Pca9685_01 as PWMGENERATOR
-from lib.GENERALFUNCTIONS import *
-
-
 PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PARENT_DIR not in sys.path:
     sys.path.insert(0, PARENT_DIR)
+
+from pyftdi import i2c
+from pca9685.pca9685 import Pca9685_01 as PWMGENERATOR
+from utils.generalfunctions import Logger
 
 DO_PLOT = False
 VOT = 9
