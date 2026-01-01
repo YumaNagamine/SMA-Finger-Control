@@ -17,7 +17,7 @@ from controller.interface import build_interface
 from utils.config_loader import load_config
 
 
-RAW_VIDEO_DIR = Path("src/data/side_angle/raw_video")
+RAW_VIDEO_DIR = Path("log/side_angle/raw_video")
 DEFAULT_CONFIG = Path(__file__).with_name("interface_config.json")
 CAMERA_CONFIG = Path(__file__).parents[1] / "observation" / "camera" / "camera_config.json"
 
