@@ -211,3 +211,5 @@ __marimo__/
 *.avi
 *.csv
 *.txt
+*.jpg
+.DS_store

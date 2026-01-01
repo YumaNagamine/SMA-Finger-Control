@@ -4,8 +4,8 @@ import json
 from pathlib import Path
 
 
-def load_config(config_path: str) -> dict:
-    """Load JSON config with a small amount of validation."""
+def load_config(config_path: str | Path, required_keys: tuple[str, ...] | None = None) -> dict:
+    """Load JSON config with optional validation."""
     path = Path(config_path)
     if not path.exists():
         raise FileNotFoundError(f"Config not found: {config_path}")
@@ -13,8 +13,9 @@ def load_config(config_path: str) -> dict:
     with path.open("r", encoding="utf-8") as f:
         data = json.load(f)
 
-    for key in ("video", "markers", "output"):
-        if key not in data:
-            raise ValueError(f"Config missing section '{key}' in {config_path}")
+    if required_keys:
+        for key in required_keys:
+            if key not in data:
+                raise ValueError(f"Config missing section '{key}' in {config_path}")
 
     return data
