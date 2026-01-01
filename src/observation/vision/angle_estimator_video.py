@@ -54,7 +54,7 @@ def store_csv(measure: list, fps: float, output_path: Path) -> None:
 
 def main() -> None:
     args = parse_args()
-    config = load_config(args.config)
+    config = load_config(args.config, required_keys=("video", "markers", "output"))
 
     video_cfg = config["video"]
     output_cfg = config["output"]

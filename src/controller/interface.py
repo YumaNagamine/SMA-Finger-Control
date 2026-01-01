@@ -145,9 +145,7 @@ class DutyInterface:
                     time.sleep(0)
 
 
-def load_config(path: str | Path) -> dict:
-    with Path(path).open("r", encoding="utf-8") as f:
-        return json.load(f)
+from utils.config_loader import load_config
 
 
 def build_interface(config_path: str | Path, mock: bool = False, log_path: str | None = None) -> DutyInterface:

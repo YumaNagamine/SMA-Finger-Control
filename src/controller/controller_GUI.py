@@ -14,10 +14,12 @@ import ttkbootstrap as ttk
 from ttkbootstrap.widgets.scrolled import ScrolledText
 
 from controller.interface import build_interface
+from utils.config_loader import load_config
 
 
 RAW_VIDEO_DIR = Path("src/data/side_angle/raw_video")
 DEFAULT_CONFIG = Path(__file__).with_name("interface_config.json")
+CAMERA_CONFIG = Path(__file__).parents[1] / "observation" / "camera" / "camera_config.json"
 
 
 class ScrollerLogger:
@@ -183,28 +185,52 @@ class ControlGUI:
         sys.exit()
 
 
-def camera_process(shared):
-    cam_num = 0
-    cap = cv2.VideoCapture(cam_num, cv2.CAP_DSHOW)
+def _resolve_backend(backend_name: str | None) -> int | None:
+    if not backend_name:
+        return None
+    return {
+        "CAP_DSHOW": cv2.CAP_DSHOW,
+        "CAP_ANY": cv2.CAP_ANY,
+    }.get(backend_name)
+
+
+def _fourcc_from_str(code: str | None) -> int | None:
+    if not code or len(code) != 4:
+        return None
+    return cv2.VideoWriter_fourcc(*code)
+
+
+def camera_process(shared, camera_cfg: dict):
+    cam_num = int(camera_cfg.get("index", 0))
+    backend = _resolve_backend(camera_cfg.get("backend"))
+    cap = cv2.VideoCapture(cam_num, backend) if backend is not None else cv2.VideoCapture(cam_num)
     if not cap.isOpened():
         print("Camera not available.")
         return
 
-    width, height = 1600, 1200
-    target_fps = 90
+    width = int(camera_cfg.get("width", 1600))
+    height = int(camera_cfg.get("height", 1200))
+    target_fps = float(camera_cfg.get("target_fps", 90))
+    buffersize = int(camera_cfg.get("buffersize", 0))
+    auto_exposure = float(camera_cfg.get("auto_exposure", 1))
+    gain = float(camera_cfg.get("gain", 0))
+    exposure = float(camera_cfg.get("exposure", -11))
+    capture_fourcc = _fourcc_from_str(camera_cfg.get("capture_fourcc", "MJPG"))
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
     cap.set(cv2.CAP_PROP_FPS, target_fps)
-    cap.set(cv2.CAP_PROP_BUFFERSIZE, 0)
-    cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1)
-    cap.set(cv2.CAP_PROP_GAIN, 0)
-    cap.set(cv2.CAP_PROP_EXPOSURE, -11)
-    cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc("M", "J", "P", "G"))
+    cap.set(cv2.CAP_PROP_BUFFERSIZE, buffersize)
+    cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, auto_exposure)
+    cap.set(cv2.CAP_PROP_GAIN, gain)
+    cap.set(cv2.CAP_PROP_EXPOSURE, exposure)
+    if capture_fourcc is not None:
+        cap.set(cv2.CAP_PROP_FOURCC, capture_fourcc)
 
     RAW_VIDEO_DIR.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = RAW_VIDEO_DIR / f"raw_{timestamp}.mp4"
-    writer = cv2.VideoWriter(str(filename), cv2.VideoWriter_fourcc(*"mp4v"), target_fps, (width, height))
+    writer_fourcc = _fourcc_from_str(camera_cfg.get("writer_fourcc", "mp4v"))
+    writer = cv2.VideoWriter(str(filename), writer_fourcc, target_fps, (width, height))
 
     try:
         while not shared.get("exit", False):
@@ -232,6 +258,7 @@ def gui_process(shared, config_path: Path, mock: bool):
 def parse_args():
     parser = argparse.ArgumentParser(description="SMA control GUI.")
     parser.add_argument("--config", type=str, default=str(DEFAULT_CONFIG))
+    parser.add_argument("--camera-config", type=str, default=str(CAMERA_CONFIG))
     parser.add_argument("--mock", action="store_true", help="Use mock duty interface.")
     return parser.parse_args()
 
@@ -239,6 +266,7 @@ def parse_args():
 def main():
     args = parse_args()
     config_path = Path(args.config)
+    camera_config = load_config(args.camera_config)
 
     with mp.Manager() as manager:
         shared = manager.dict()
@@ -246,7 +274,7 @@ def main():
         shared["photo_acquired_t"] = 0.0
         shared["exit"] = False
 
-        proc_cam = mp.Process(target=camera_process, name="CAM", args=(shared,))
+        proc_cam = mp.Process(target=camera_process, name="CAM", args=(shared, camera_config))
         proc_gui = mp.Process(target=gui_process, name="GUI", args=(shared, config_path, args.mock))
 
         proc_cam.start()
