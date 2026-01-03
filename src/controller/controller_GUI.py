@@ -38,11 +38,13 @@ class ScrollerLogger:
 
 
 class ControlGUI:
-    def __init__(self, root, shared, config_path: Path, mock: bool):
+    def __init__(self, root, shared, config_path: Path, mock: bool, interface_builder=None, on_exit_callback=None):
         self.root = root
         self.shared = shared
         self.config_path = config_path
         self.mock = mock
+        self.interface_builder = interface_builder or build_interface
+        self.on_exit_callback = on_exit_callback
         self.interface = None
         self.photo_acquired_t = 0.0
 
@@ -136,7 +138,7 @@ class ControlGUI:
     def _connect(self):
         print("Connecting interface...")
         try:
-            self.interface = build_interface(self.config_path, mock=self.mock)
+            self.interface = self.interface_builder(self.config_path, mock=self.mock)
             print("Connected.")
         except Exception as err:
             print(f"Connection failed: {err}")
@@ -180,6 +182,11 @@ class ControlGUI:
             self._stop()
         except Exception as err:
             print(f"Stop failed: {err}")
+        if self.on_exit_callback:
+            try:
+                self.on_exit_callback()
+            except Exception as err:
+                print(f"Exit callback failed: {err}")
         self.shared["exit"] = True
         self.root.destroy()
         sys.exit()
@@ -247,11 +254,34 @@ def camera_process(shared, camera_cfg: dict):
         print("Camera and video writer released.")
 
 
-def gui_process(shared, config_path: Path, mock: bool):
+def gui_process(
+    shared,
+    config_path: Path,
+    mock: bool,
+    interface_builder=None,
+    on_exit_callback=None,
+    stop_event=None,
+):
     root = ttk.Window(hdpi=True, scaling=3, themename="darkly")
     root.title("Control SMA")
     root.geometry("+0+0")
-    ControlGUI(root, shared, config_path, mock)
+    ControlGUI(
+        root,
+        shared,
+        config_path,
+        mock,
+        interface_builder=interface_builder,
+        on_exit_callback=on_exit_callback,
+    )
+
+    if stop_event is not None:
+        def _watch_stop():
+            if stop_event.is_set():
+                root.destroy()
+                return
+            root.after(200, _watch_stop)
+
+        root.after(200, _watch_stop)
     root.mainloop()
 
 
