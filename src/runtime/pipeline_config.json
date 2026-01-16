@@ -1,0 +1,20 @@
+{
+  "runtime": {
+    "log_dir": "log/sessions",
+    "duty_channels": 7,
+    "duty_buffer_len": 180,
+    "frame_queue_len": 180,
+    "log_queue_len": 360,
+    "include_fps": false
+  },
+  "camera": {
+    "config_path": "src/observation/camera/camera_config.json",
+    "enable_capture_video": true
+  },
+  "angle": {
+    "config_path": "src/observation/vision/config.json"
+  },
+  "control": {
+    "mode": "gui"
+  }
+}
